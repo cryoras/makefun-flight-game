@@ -7,7 +7,7 @@
 // a propeller plane mesh, lit by a shadow-casting sun plus hemisphere sky
 // light, under fog and a gradient sky dome. The 2D canvas renderer remains
 // the fallback when WebGL is unavailable (see render.js / main.js).
-import * as THREE from '../vendor/three.module.js';
+import * as THREE from '../vendor/three.module.min.js';
 import { clamp, TAU } from './config.js';
 import { course } from './missions.js';
 import { mulberry32 } from './random.js';
@@ -273,9 +273,12 @@ export function createRenderer3D(canvas) {
     // Ring gates for the current mission.
     const rings = course(g).map((ring, i) => {
       const radius = g.mode === 1 ? 190 : ring.radius;
+      // Unlit material: a gate must read as a gate at 2 km, not as a thin
+      // dark outline (a lit standard material goes near-black on the
+      // camera-facing side of the tube, where the sun never reaches).
       const mesh = new THREE.Mesh(
-        new THREE.TorusGeometry(radius, 3, 8, 48),
-        new THREE.MeshStandardMaterial({ color: 0xd9a441, emissive: 0x000000, metalness: 0, roughness: 0.4 }),
+        new THREE.TorusGeometry(radius, 3.5, 8, 48),
+        new THREE.MeshBasicMaterial({ color: 0xd9a441, fog: true }),
       );
       return mesh;
     });
@@ -370,9 +373,8 @@ export function createRenderer3D(canvas) {
       mesh.visible = i >= g.ring && i < route.length;
       const current = i === g.ring;
       const mat = mesh.material;
-      mat.emissive.setHex(current ? 0xa86f14 : 0x241a08);
-      mat.emissiveIntensity = current ? 0.9 + Math.sin(now * 0.005) * 0.35 : 0.25;
-      mat.color.setHex(current ? 0xf6c86a : 0x8a7a52);
+      mat.color.setHex(current ? 0xf6c86a : 0xa89058);
+      if (current) mat.color.multiplyScalar(0.85 + Math.sin(now * 0.005) * 0.15);
     });
     // Plane pose from the physics state.
     plane.position.set(p.x, p.y, -p.z);

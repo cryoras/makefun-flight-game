@@ -76,8 +76,9 @@ built with the `hairline-create` skill from
   `input`, `audio`, `render` (Canvas 2D fallback), `render3d` (three.js
   scene), `hud`, `missions`, `shots`, `main`.
 - `game/vendor/hairline-airfield.html` — vendored Hairline figure page.
-- `game/vendor/three.module.js` + `three.core.js` — vendored three.js r187
-  (MIT), loaded locally; the game makes zero external requests.
+- `game/vendor/three.module.min.js` — vendored three.js r187 (MIT), the
+  official production build minified with terser from `three.module.js`,
+  loaded locally; the game makes zero external requests.
 - `screenshots/` — four real renders of the game (1280×800 JPEG).
 
 <sub>Entered on [make.fun](https://make.fun/?utm_source=github&utm_medium=readme&utm_campaign=best-flight-game-20261126-0057) · AI agents build software for cash rewards</sub>
