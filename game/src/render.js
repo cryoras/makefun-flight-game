@@ -1,8 +1,22 @@
 import { clamp, mix, PALETTE as P, TAU } from './config.js';
 import { course, target } from './missions.js';
 export function createRenderer(canvas) {
-  const c = canvas.getContext('2d', { alpha: false });
-  let w = 1, h = 1, ratio = 1;
+  const c = canvas.getContext('2d', { alpha: true });
+  let w = 1, h = 1, ratio = 1, use3d = false;
+  // When the three.js scene is live, this canvas stays transparent and only
+  // carries the cockpit frame, vignette and (via hud.js) the instruments.
+  function set3D(on) { use3d = !!on; }
+  function drawCockpit(g) {
+    c.strokeStyle = '#162c32'; c.lineWidth = 18;
+    c.beginPath(); c.moveTo(w * .12, h); c.lineTo(w * .25, h * .22); c.quadraticCurveTo(w * .5, h * .03, w * .75, h * .22); c.lineTo(w * .88, h); c.stroke();
+    c.lineWidth = 2; c.strokeStyle = '#c7c1a474'; c.stroke();
+    c.fillStyle = '#14262d'; c.beginPath(); c.ellipse(w * .5, h * .94, w * .27, h * .22, 0, Math.PI, TAU); c.fill();
+    c.fillStyle = '#e5d7aa25'; c.beginPath(); c.ellipse(w * .5, h * .68, w * .17, h * .012, Math.sin(g.time * 40) * .05, 0, TAU); c.fill();
+  }
+  function drawVignette() {
+    const vignette = c.createRadialGradient(w / 2, h * .44, h * .2, w / 2, h / 2, w * .75);
+    vignette.addColorStop(0, '#001a2100'); vignette.addColorStop(1, '#071d2a78'); c.fillStyle = vignette; c.fillRect(0, 0, w, h);
+  }
   function resize() {
     w = innerWidth; h = innerHeight; ratio = Math.min(devicePixelRatio || 1, 1.8);
     canvas.width = Math.round(w * ratio); canvas.height = Math.round(h * ratio);
@@ -16,6 +30,12 @@ export function createRenderer(canvas) {
   }
   function scene(g, scenic = false) {
     const p = g.plane, terrain = g.terrain, cockpit = g.camera === 1 && !scenic;
+    if (use3d) {
+      c.clearRect(0, 0, w, h);
+      if (cockpit) drawCockpit(g);
+      drawVignette();
+      return { ctx: c, width: w, height: h, project: null };
+    }
     const sky = c.createLinearGradient(0, 0, 0, h * .72);
     sky.addColorStop(0, '#427b91'); sky.addColorStop(.45, '#a8b6af'); sky.addColorStop(.76, '#e8cc9e'); sky.addColorStop(1, '#c7c7a3');
     c.fillStyle = sky; c.fillRect(0, 0, w, h);
@@ -139,15 +159,8 @@ export function createRenderer(canvas) {
     const label = project(0, 44, 130);
     if (label && label.depth < 3000) { c.save(); c.translate(label.x, label.y); c.scale(clamp(label.scale * 10, .25, 5), clamp(label.scale * 3, .15, 2)); c.fillStyle = '#eae0bb'; c.textAlign = 'center'; c.font = '700 13px system-ui'; c.fillText('36', 0, 0); c.restore(); }
     if (!scenic && !cockpit) drawPlane(p, project(p.x, p.y, p.z), g.time, g.terrain);
-    if (cockpit) {
-      c.strokeStyle = '#162c32'; c.lineWidth = 18;
-      c.beginPath(); c.moveTo(w * .12, h); c.lineTo(w * .25, h * .22); c.quadraticCurveTo(w * .5, h * .03, w * .75, h * .22); c.lineTo(w * .88, h); c.stroke();
-      c.lineWidth = 2; c.strokeStyle = '#c7c1a474'; c.stroke();
-      c.fillStyle = '#14262d'; c.beginPath(); c.ellipse(w * .5, h * .94, w * .27, h * .22, 0, Math.PI, TAU); c.fill();
-      c.fillStyle = '#e5d7aa25'; c.beginPath(); c.ellipse(w * .5, h * .68, w * .17, h * .012, Math.sin(g.time * 40) * .05, 0, TAU); c.fill();
-    }
-    const vignette = c.createRadialGradient(w / 2, h * .44, h * .2, w / 2, h / 2, w * .75);
-    vignette.addColorStop(0, '#001a2100'); vignette.addColorStop(1, '#071d2a78'); c.fillStyle = vignette; c.fillRect(0, 0, w, h);
+    if (cockpit) drawCockpit(g);
+    drawVignette();
     return { ctx: c, width: w, height: h, project };
   }
   function drawPlane(p, pos, time, terrain) {
@@ -173,5 +186,5 @@ export function createRenderer(canvas) {
     if (p.y - terrain.heightAt(p.x, p.z) < 60) { c.fillStyle = '#1c3035'; c.fillRect(-22, 27, 5, 10); c.fillRect(17, 27, 5, 10); }
     c.restore();
   }
-  return { scene, resize };
+  return { scene, resize, set3D };
 }

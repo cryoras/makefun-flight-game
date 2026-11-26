@@ -6,6 +6,15 @@ import { createRenderer } from './render.js';
 import { drawHud } from './hud.js';
 import { stageShot } from './shots.js';
 const canvas = document.querySelector('#game'), renderer = createRenderer(canvas), input = createInput(canvas), audio = createAudio();
+// Real 3D scene (three.js, vendored in game/vendor/); if WebGL or the module
+// fails, the 2D canvas renderer in render.js keeps the game fully playable.
+let renderer3d = null;
+try {
+  const mod = await import('./render3d.js');
+  renderer3d = mod.createRenderer3D(document.querySelector('#gl'));
+} catch { renderer3d = null; }
+if (renderer3d) renderer.set3D(true);
+window.__gl3d = !!renderer3d;
 const $ = id => document.getElementById(id), params = new URLSearchParams(location.search);
 const parsedSeed = Number(params.get('seed') ?? 1), seed = Number.isFinite(parsedSeed) ? parsedSeed >>> 0 : 1;
 let mode = 0, world = createGame(seed, mode), screen = 'title', muted = false, last = 0, accumulator = 0, staging = params.has('shot');
@@ -50,6 +59,7 @@ function menu() { staging = false; world = createGame(seed, mode); setScreen('ti
 $('launch').onclick = launch; $('again').onclick = launch; $('resume').onclick = () => { audio.start(); setScreen('play'); };
 document.querySelectorAll('.menu').forEach(b => b.onclick = menu);
 function paint() {
+  if (renderer3d) renderer3d.render(world, screen === 'title');
   const view = renderer.scene(world, screen === 'title');
   if (screen !== 'title') drawHud(world, view, muted);
   if (screen === 'play' && world.time < 10) { $('brief').hidden = false; $('brief').textContent = world.mission.brief; } else $('brief').hidden = true;
@@ -82,5 +92,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && scr
 window.addEventListener('blur', () => { if (screen === 'play' && !staging) setScreen('paused'); });
 if (staging) {
   await stageShot(params.get('shot'), seed, { setWorld(g, state) { world = g; mode = g.mode; setScreen(state); }, paint });
-} else paint();
-requestAnimationFrame(tick);
+  // The staged frame is already painted; leave the loop stopped so a
+  // headless screenshot (software GL) is not starved waiting for a fresh
+  // frame, and the staged scene stays exactly as the autopilot left it.
+} else { paint(); requestAnimationFrame(tick); }
+// Small read-only hook for automated checks (throttle, speed, mission state).
+window.__kestrel = { state: () => ({ mode, screen, throttle: world.plane.throttle, speed: world.plane.speed, fuel: world.plane.fuel, score: world.score, ring: world.ring, time: world.time, x: world.plane.x, y: world.plane.y, z: world.plane.z, onGround: world.plane.onGround, ended: world.ended, gl3d: !!renderer3d }) };

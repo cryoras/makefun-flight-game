@@ -3,7 +3,7 @@ import { createTerrain } from './terrain.js';
 import { createPlane, stepPhysics } from './physics.js';
 export function createGame(seed = 1, mode = 0) {
   const terrain = createTerrain(seed), mission = MISSIONS[mode];
-  return { seed, mode, mission, terrain, plane: createPlane(terrain), time: 0, airTime: 0, maxAgl: 0, ring: 0, score: 0, camera: 0, ended: false, result: null, pending: null, landedFor: 0, events: [], message: 'OPEN THROTTLE · SHIFT TO ACCELERATE', messageTime: 8, trail: [], trailTick: 0 };
+  return { seed, mode, mission, terrain, plane: createPlane(terrain), time: 0, airTime: 0, maxAgl: 0, ring: 0, score: 0, camera: 0, ended: false, result: null, pending: null, landedFor: 0, events: [], message: 'OPEN THROTTLE · SHIFT TO ACCELERATE', messageTime: 4, trail: [], trailTick: 0 };
 }
 export function course(g) {
   const r = g.terrain.rings;

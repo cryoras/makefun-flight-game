@@ -35,7 +35,9 @@ export function drawHud(g, view, muted = false) {
   if (agl < 35 && !p.onGround) text('LOW TERRAIN', cx, h * .35, 12, P.gold, 'center', 700);
   if (p.stall) text('STALL', cx, h * .40, 26, P.red, 'center', 800);
   if (g.messageTime > 0) {
-    const yy = h * .19, ww = Math.min(w - 30, 520 * s);
+    // Bottom-centre, just above the instrument panel: the centre-top band
+    // stays clear for the in-scene target label (ring / marker + distance).
+    const yy = h - 205 * s, ww = Math.min(w - 30, 520 * s);
     panel(cx - ww / 2, yy, ww, 33 * s); text(g.message, cx, yy + 21 * s, 10, g.message.includes('STALL') ? P.red : P.gold, 'center', 650);
   }
   // The panel's tapes and attitude ball remain lit in both camera modes.

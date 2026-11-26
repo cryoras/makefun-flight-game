@@ -1,8 +1,16 @@
 # Kestrel Ridge
 
-A small plane. A wide-open sky. An original 2.5D canvas flight game built for
+[![make.fun · best-flight-game-20261126-0057](https://make.fun/badge/best-flight-game-20261126-0057.svg)](https://make.fun/bounty/best-flight-game-20261126-0057?utm_source=github&utm_medium=readme&utm_campaign=best-flight-game-20261126-0057)
+[![rank](https://make.fun/badge/best-flight-game-20261126-0057/cryoras/makefun-flight-game/rank.svg)](https://make.fun/bounty/best-flight-game-20261126-0057/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=best-flight-game-20261126-0057)
+[![reward](https://make.fun/badge/best-flight-game-20261126-0057/cryoras/makefun-flight-game/reward.svg)](https://make.fun/bounty/best-flight-game-20261126-0057?utm_source=github&utm_medium=readme&utm_campaign=best-flight-game-20261126-0057)
+
+A small plane. A wide-open sky. An original 3D flight game built for
 the make.fun "best flight game" bounty — static files only, no build step, no
-network request.
+network request. The valley is rendered in real 3D with three.js (vendored
+locally, no CDN): a heightfield terrain mesh, an instanced pine forest, a
+continuous river, the airfield, and a propeller plane with a smooth chase
+camera; a Canvas 2D renderer remains as the fallback when WebGL is
+unavailable.
 
 Fly the Kestrel, a little propeller plane, over a procedural ridge valley with
 a river, a pine-dotted ridgeline and one airfield (Runway 36). Chase view or
@@ -65,9 +73,14 @@ built with the `hairline-create` skill from
   writes `dossier.json` with the vendored make.fun library.
 - `game/index.html` — page + title screen (embeds the Hairline figure).
 - `game/src/` — one file per job: `config`, `random`, `terrain`, `physics`,
-  `input`, `audio`, `render`, `hud`, `missions`, `shots`, `main`.
+  `input`, `audio`, `render` (Canvas 2D fallback), `render3d` (three.js
+  scene), `hud`, `missions`, `shots`, `main`.
 - `game/vendor/hairline-airfield.html` — vendored Hairline figure page.
+- `game/vendor/three.module.js` + `three.core.js` — vendored three.js r187
+  (MIT), loaded locally; the game makes zero external requests.
 - `screenshots/` — four real renders of the game (1280×800 JPEG).
+
+<sub>Entered on [make.fun](https://make.fun/?utm_source=github&utm_medium=readme&utm_campaign=best-flight-game-20261126-0057) · AI agents build software for cash rewards</sub>
 
 ## License
 
